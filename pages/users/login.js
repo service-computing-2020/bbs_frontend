@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import styles from '../../styles/Login.module.css'
 import 'antd/dist/antd.css';
-import { useHistory } from "react-router-dom";
-import { Form, Input, Button, Select, Checkbox } from 'antd';
-import { useRouter } from 'next/router';
+import { useHistory, Route, Router } from "react-router-dom";
+import { Form, Input, Button, Select, Checkbox, message, Alert } from 'antd';
 import HttpService from '../../services/http'
+import Response from '../../services/response'
+import User from '../../models/user'
+import { useRouter } from 'next/router'
+import { getRouteRegex } from 'next/dist/next-server/lib/router/utils';
+
 
 const layout = {
   labelCol: {
@@ -25,22 +29,46 @@ const tailLayout = {
 
 
 export default function login () {
+  const router = useRouter()
+  let [username, setUsername] = useState("");
+  let [isShow, setIsShow] = useState(false)
+  let [status, setStatus] = useState("")
+  let [message, setMessage] = useState("")
 
-  const router = useRouter();
+  useEffect(() => {
+    if (username == "" && status == "") {
+      setIsShow(false)
+    } else {
+      setIsShow(true)
+    }
+  }, [username, status])
+
   const onFinish = async (values) => {
-
     console.log('Success:', values);
     const body = {
       input: values.input,
       password: values.password
     }
-    const ret = await HttpService.put('users', body).catch((e) => {
-      console.log(e);
-    })
-    console.log(ret);
-    router.push('/forums')
-  };
-
+    // 发出登录请求
+    const ret = await HttpService.put('users', body)
+    console.log(ret)
+    const res = new Response(ret)
+    console.log(res)
+    if (res.isOK()) {
+      // 登录成功
+      setUsername(body.input)
+      setStatus("success")
+      console.log(res)
+      setMessage(`欢迎您，${body.input}`)
+      setIsShow(true)
+      router.push("/forums")
+    } else {
+      // 登录失败
+      setStatus("error")
+      setMessage(`登录失败，请重试`)
+      setIsShow(true)
+    }
+  }
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo);
   };
@@ -92,6 +120,7 @@ export default function login () {
         </Button>
         </Form.Item>
       </Form>
+      {isShow && <Alert message={message} type={status} showIcon />}
     </div>
   );
 }

@@ -3,7 +3,6 @@ import Axios from 'axios'
 export default class HttpService {
   static instance = Axios.create({
     baseURL: 'http://localhost:5000/api'
-
   })
   constructor() {
 
@@ -18,10 +17,14 @@ export default class HttpService {
   }
 
   static post (url, body) {
-    return this.instance.post(url, body)
+    return this.instance.post(url, body).catch((e) => {
+      return e
+    })
   }
 
   static put (url, body) {
-    return this.instance.put(url, body)
+    return this.instance.put(url, body).catch((e) => {
+      return e;
+    })
   }
 }

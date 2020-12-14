@@ -59,6 +59,7 @@ export default function login () {
       setUsername(body.input)
       setStatus("success")
       console.log(res)
+      localStorage.setItem('token', res.data["token"])
       setMessage(`欢迎您，${body.input}`)
       setIsShow(true)
       router.push("/forums")

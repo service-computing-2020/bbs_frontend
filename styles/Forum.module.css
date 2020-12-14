@@ -1,0 +1,31 @@
+.logo {
+  height: 66px;
+}
+
+.userInfo {
+  position: relative;
+}
+.avatar {
+  margin-top: 0px;
+  position: absolute;
+  left: 32%;
+}
+
+.username {
+  position: absolute;
+  left: 20%;
+  top: 50%;
+
+}
+
+.email {
+position: absolute;
+  left: 20%;
+  top: 60%;
+}
+
+.create_at {
+  position: absolute;
+  left: 20%;
+  top: 70%;
+}

@@ -4,7 +4,10 @@ export default class Response {
   code;
   constructor(res) {
     if (res.data == undefined) {
-      this.code = res.status
+      let response = res.error
+      this.data = response.data
+      this.msg = response.msg
+      this.code = response.code
     } else {
       let response = res.data
       this.data = response.data

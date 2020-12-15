@@ -5,6 +5,7 @@ export default class Forum {
   description;
   forum_name;
   is_public;
+  is_star;
   constructor(data) {
     Object.assign(this, data)
   }

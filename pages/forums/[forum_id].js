@@ -1,69 +1,51 @@
 import React, { useState, useEffect } from 'react';
-import HttpService from '../../services/http'
-import styles from '../../styles/Forum.module.css'
-import 'antd/dist/antd.css';
+import ReactDOM from 'react-dom';
 import { Layout, Menu, Breadcrumb, Avatar } from 'antd';
-import Forums from '../../components/forums'
 import {
   PieChartOutlined,
   UserOutlined,
 } from '@ant-design/icons';
+import 'antd/dist/antd.css';
+
 import Response from '../../services/response';
 import User from '../../models/user';
-import { getAvatarURL } from '../../services/file';
-
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
+import styles from '../../styles/Forum.module.css'
+import { getAvatarURL } from '../../services/file';
+import HttpService from '../../services/http';
+import { useRouter } from 'next/router';
+import Posts from '../../components/posts'
 
-export default function forums () {
+
+export default function singleForum (props) {
   const [collapsed, setCollapsed] = useState(false)
   const [avatarSize, setAvatarSize] = useState(64)
   const [userInfoStyle, setUserInfoStyle] = useState({ height: '200px', position: 'relative' })
-  const [forums, setForums] = useState([])
   const [userDetail, setUserDetail] = useState({});
+  const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true)
-  const [starForums, setStarForums] = useState([])
-  const [participateForums, setParticipateForums] = useState([])
   const [key, setKey] = useState('1')
-
+  const [refresh, setRefresh] = useState(false)
+  const router = useRouter()
   useEffect(() => {
+    console.log("execute")
     const retrieveData = async () => {
-
-      if (isLoading) {
-        let res = await HttpService.get("/forums")
-        let response = new Response(res)
-        console.log(response)
-        const ud = response.data.user_detail
-        const fs = response.data.forums
-        setUserDetail(new User(ud))
-        let stars = []
-        let participate = []
-        if (ud.star_list != null) {
-          for (let i = 0; i < fs.length; i++) {
-            if (ud.star_list.indexOf(fs[i].forum_id) != -1) {
-              fs[i].is_star = true
-              stars.push(fs[i]);
-            }
-          }
-        }
-        if (ud.participate_list != null) {
-          for (let i = 0; i < fs.length; i++) {
-            if (ud.participate_list.indexOf(fs[i].forum_id) != -1) {
-              fs[i].is_star = true;
-              participate.push(fs[i])
-            }
-          }
-        }
-        console.log(stars)
-        console.log(participate)
-        setForums(fs)
-        setParticipateForums(participate)
-        setStarForums(stars)
-        setIsLoading(false);
+      const { forum_id } = router.query
+      if (forum_id != undefined && isLoading) {
+        HttpService.get(`/forums/${forum_id}/posts`).then((val) => {
+          const response = new Response(val)
+          setPosts(response.data)
+          setIsLoading(false);
+          setRefresh(true)
+          console.log("finish")
+        }).catch((e) => {
+          console.log(e)
+        })
       }
     }
     retrieveData()
-  }, [isLoading, key])
+  }, [router, isLoading])
 
   const onCollapse = () => {
     setCollapsed(!collapsed)
@@ -82,18 +64,6 @@ export default function forums () {
     )
   }
 
-  const switchForums = (id) => {
-    if (id == '1') {
-      console.log(forums)
-      return (<Forums forums={forums} />)
-    } else if (id == '2') {
-      console.log(starForums)
-      return (<Forums forums={starForums} />)
-    } else if (id == '3') {
-      console.log(participateForums)
-      return (<Forums forums={participateForums} />)
-    }
-  }
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider collapsible collapsed={collapsed} onCollapse={onCollapse}>
@@ -108,18 +78,17 @@ export default function forums () {
             {!collapsed && <div className={styles.create_at}>{userDetail.create_at}</div>}
           </div>
           <Menu.Item key="1" icon={<PieChartOutlined />}>
-            浏览
+            广场
             </Menu.Item>
-          <SubMenu key="sub1" icon={<UserOutlined />} title="我的订阅">
-            <Menu.Item key="2">公共</Menu.Item>
-            <Menu.Item key="3">私有</Menu.Item>
-          </SubMenu>
+          <Menu.Item key="2" icon={<PieChartOutlined />}>
+            树洞
+            </Menu.Item>
         </Menu>
       </Sider>
       <Layout className="site-layout">
         <Header className="site-layout-background" style={{ padding: 0 }} />
         <Content style={{ margin: '0 16px' }}>
-          {switchForums(key)}
+          <Posts posts={posts} />
         </Content>
       </Layout>
     </Layout>

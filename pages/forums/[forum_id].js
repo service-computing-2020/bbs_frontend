@@ -17,6 +17,7 @@ import HttpService from '../../services/http';
 import { useRouter } from 'next/router';
 import Posts from '../../components/posts'
 import Forum from '../../models/forum';
+import Holes from '../../components/holes';
 
 
 export default function singleForum (props) {
@@ -27,13 +28,35 @@ export default function singleForum (props) {
   const [forum, setForum] = useState(new Forum())
   const [isLoading, setIsLoading] = useState(true)
   const [src, setSrc] = useState({ source: '' })
+  const [isHolesLoading, setIsHolesLoading] = useState(true)
   const [isPostsLoading, SetIsPostsLoading] = useState(true)
   const [isForumLoading, SetIsForumLoading] = useState(true)
-
+  const [isPostShow, setIsPostShow] = useState(true)
+  const [isHoleShow, setIsHoleShow] = useState(false)
+  const [holes, setHoles] = useState([])
 
 
   const router = useRouter()
   useEffect(() => {
+    const retrieveHoles = async () => {
+      const { forum_id } = router.query
+      if (forum_id != undefined && isHolesLoading) {
+        HttpService.get(`/forums/${forum_id}/holes`).then((val) => {
+          console.log(val)
+          const response = new Response(val)
+          console.log(response.data)
+          if (response.data == null) {
+            setHoles([])
+          } else {
+            setHoles(response.data)
+          }
+          setIsHolesLoading(false)
+        }).catch((e) => {
+          console.log(e)
+        })
+      }
+    }
+
     const retrievePosts = async () => {
       const { forum_id } = router.query
       if (forum_id != undefined && isPostsLoading) {
@@ -76,39 +99,11 @@ export default function singleForum (props) {
         })
       }
     }
-
-    // const retrieveData = async () => {
-    //   const { forum_id } = router.query
-    //   if (forum_id != undefined && isLoading) {
-    //     // 首先获取全部的post
-    //     HttpService.get(`/forums/${forum_id}/posts`).then((val) => {
-    //       const response = new Response(val)
-    //       setPosts(response.data)
-    //       HttpService.get(`/forums/${forum_id}`).then((val) => {
-    //         const response = new Response(val)
-    //         setForum(response.data)
-    //         HttpService.get(getAvatarURL(ud.user_id), { responseType: 'arraybuffer' }).then(response => {
-    //           const base64 = btoa(new Uint8Array(response.data).reduce(
-    //             (data, byte) => data + String.fromCharCode(byte),
-    //             '',
-    //           ),
-    //           );
-    //           setSrc({ source: 'data:;base64,' + base64 });
-    //           setIsLoading(false);
-    //         })
-    //         setIsLoading(false);
-    //         setRefresh(true)
-    //       })
-
-    //     }).catch((e) => {
-    //       console.log(e)
-    //     })
-    //   }
-    // }
     retrievePosts()
-    // retrieveForum()
+    retrieveHoles()
+    retrieveForum()
     retrieveCover()
-  }, [router, isLoading, isForumLoading, isPostsLoading])
+  }, [router, isLoading, isForumLoading, isPostsLoading, isHolesLoading])
 
   const onCollapse = () => {
     setCollapsed(!collapsed)
@@ -121,10 +116,20 @@ export default function singleForum (props) {
     }
   }
 
-  if (isLoading || isPostsLoading) {
+  if (isLoading || isPostsLoading || isForumLoading || isHolesLoading) {
     return (
       <p>is loading</p>
     )
+  }
+
+  const switchBrowser = (id) => {
+    setIsHoleShow(false)
+    setIsPostShow(false)
+    if (id == '1') {
+      setIsPostShow(true)
+    } else if (id == '2') {
+      setIsHoleShow(true)
+    }
   }
 
   return (
@@ -133,7 +138,7 @@ export default function singleForum (props) {
         <div className={styles.logo}>
 
         </div>
-        <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" onClick={(item) => { setKey(item.key) }}>
+        <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" onClick={(item) => { switchBrowser(item.key) }}>
           <div style={userInfoStyle}>
             <Avatar className={styles.avatar} size={avatarSize} src={src.source} />
             {!collapsed && <div className={styles.username}>{forum.forum_name}</div>}
@@ -151,7 +156,8 @@ export default function singleForum (props) {
       <Layout className="site-layout">
         <Header className="site-layout-background" style={{ padding: 0 }} />
         <Content style={{ margin: '0 16px' }}>
-          <Posts posts={posts} />
+          {isPostShow && <Posts posts={posts} />}
+          {isHoleShow && <Holes holes={holes} />}
         </Content>
       </Layout>
     </Layout>

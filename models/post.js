@@ -10,5 +10,8 @@ export default class Post {
 
   constructor(data) {
     Object.assign(this, data)
+    if (this.files == null) {
+      this.files = []
+    }
   }
 }

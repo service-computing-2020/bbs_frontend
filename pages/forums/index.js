@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import HttpService from '../../services/http'
 import styles from '../../styles/Forum.module.css'
 import 'antd/dist/antd.css';
-import { Layout, Menu, Breadcrumb, Avatar, Button } from 'antd';
+import { Layout, Menu, Breadcrumb, message, Avatar, Button, Upload } from 'antd';
 import Forums from '../../components/forums'
 import {
   PieChartOutlined,
   UserOutlined,
+  UploadOutlined
 } from '@ant-design/icons';
 import Response from '../../services/response';
 import User from '../../models/user';
@@ -25,8 +26,9 @@ export default function forums () {
   const [starForums, setStarForums] = useState([])
   const [participateForums, setParticipateForums] = useState([])
   const [src, setSrc] = useState({ source: '' })
-
-  const [key, setKey] = useState('1')
+  const [allForumsShow, setAllForumsShow] = useState(true)
+  const [starForumsShow, setStarForumsShow] = useState(false)
+  const [participateForumsShow, setParticipateForumsShow] = useState(false)
 
   useEffect(() => {
     const retrieveData = async () => {
@@ -73,7 +75,7 @@ export default function forums () {
       }
     }
     retrieveData()
-  }, [isLoading, key])
+  }, [isLoading])
 
   const onCollapse = () => {
     setCollapsed(!collapsed)
@@ -92,16 +94,34 @@ export default function forums () {
     )
   }
 
+  const props = {
+    name: 'avatar',
+    action: `http://localhost:5000/api/users/${userDetail.user_id}/avatar`,
+    headers: {
+      authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+    onChange (info) {
+      if (info.file.status !== 'uploading') {
+        console.log(info.file, info.fileList);
+      }
+      if (info.file.status === 'done') {
+        message.success(`${info.file.name} file uploaded successfully`);
+      } else if (info.file.status === 'error') {
+        message.error(`${info.file.name} file upload failed.`);
+      }
+    },
+  };
+
   const switchForums = (id) => {
+    setAllForumsShow(false)
+    setParticipateForumsShow(false)
+    setStarForumsShow(false)
     if (id == '1') {
-      console.log(forums)
-      return (<Forums forums={forums} />)
+      setAllForumsShow(true)
     } else if (id == '2') {
-      console.log(starForums)
-      return (<Forums forums={starForums} />)
+      setStarForumsShow(true)
     } else if (id == '3') {
-      console.log(participateForums)
-      return (<Forums forums={participateForums} />)
+      setParticipateForumsShow(true)
     }
   }
   return (
@@ -110,14 +130,17 @@ export default function forums () {
         <div className={styles.logo}>
 
         </div>
-        <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" onClick={(item) => { setKey(item.key) }}>
+        <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" onClick={(item) => { switchForums(item.key) }}>
           <div style={userInfoStyle}>
             <Avatar className={styles.avatar} size={avatarSize} src={src.source} />
             {!collapsed && <div className={styles.username}>{userDetail.username}</div>}
             {!collapsed && <div className={styles.email}>{userDetail.email}</div>}
             {!collapsed && <div className={styles.create_at}>{userDetail.create_at}</div>}
-            <Button type="primary">修改头像</Button>
+
           </div>
+          <Upload {...props}>
+            {!collapsed && <Button icon={<UploadOutlined />}>上传头像</Button>}
+          </Upload>
           <Menu.Item key="1" icon={<PieChartOutlined />}>
             浏览
             </Menu.Item>
@@ -130,7 +153,9 @@ export default function forums () {
       <Layout className="site-layout">
         <Header className="site-layout-background" style={{ padding: 0 }} />
         <Content style={{ margin: '0 16px' }}>
-          {switchForums(key)}
+          {allForumsShow && <Forums forums={forums} />}
+          {starForumsShow && <Forums forums={starForums} />}
+          {participateForumsShow && <Forums forums={participateForums} />}
         </Content>
       </Layout>
     </Layout>

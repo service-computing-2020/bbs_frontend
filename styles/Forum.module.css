@@ -29,3 +29,8 @@ position: absolute;
   left: 20%;
   top: 70%;
 }
+
+.uploadButton {
+  position: absolute;
+  bottom: 10%;
+}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import HttpService from '../../services/http'
 import styles from '../../styles/Forum.module.css'
 import 'antd/dist/antd.css';
-import { Layout, Menu, Breadcrumb, Avatar } from 'antd';
+import { Layout, Menu, Breadcrumb, Avatar, Button } from 'antd';
 import Forums from '../../components/forums'
 import {
   PieChartOutlined,
@@ -24,6 +24,8 @@ export default function forums () {
   const [isLoading, setIsLoading] = useState(true)
   const [starForums, setStarForums] = useState([])
   const [participateForums, setParticipateForums] = useState([])
+  const [src, setSrc] = useState({ source: '' })
+
   const [key, setKey] = useState('1')
 
   useEffect(() => {
@@ -54,12 +56,20 @@ export default function forums () {
             }
           }
         }
-        console.log(stars)
-        console.log(participate)
+
         setForums(fs)
         setParticipateForums(participate)
         setStarForums(stars)
-        setIsLoading(false);
+
+        await HttpService.get(getAvatarURL(ud.user_id), { responseType: 'arraybuffer' }).then(response => {
+          const base64 = btoa(new Uint8Array(response.data).reduce(
+            (data, byte) => data + String.fromCharCode(byte),
+            '',
+          ),
+          );
+          setSrc({ source: 'data:;base64,' + base64 });
+          setIsLoading(false);
+        })
       }
     }
     retrieveData()
@@ -102,10 +112,11 @@ export default function forums () {
         </div>
         <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" onClick={(item) => { setKey(item.key) }}>
           <div style={userInfoStyle}>
-            <Avatar className={styles.avatar} size={avatarSize} src={getAvatarURL(userDetail.user_id)} />
+            <Avatar className={styles.avatar} size={avatarSize} src={src.source} />
             {!collapsed && <div className={styles.username}>{userDetail.username}</div>}
             {!collapsed && <div className={styles.email}>{userDetail.email}</div>}
             {!collapsed && <div className={styles.create_at}>{userDetail.create_at}</div>}
+            <Button type="primary">修改头像</Button>
           </div>
           <Menu.Item key="1" icon={<PieChartOutlined />}>
             浏览

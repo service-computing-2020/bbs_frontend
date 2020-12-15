@@ -16,36 +16,99 @@ import { getAvatarURL } from '../../services/file';
 import HttpService from '../../services/http';
 import { useRouter } from 'next/router';
 import Posts from '../../components/posts'
+import Forum from '../../models/forum';
 
 
 export default function singleForum (props) {
   const [collapsed, setCollapsed] = useState(false)
   const [avatarSize, setAvatarSize] = useState(64)
   const [userInfoStyle, setUserInfoStyle] = useState({ height: '200px', position: 'relative' })
-  const [userDetail, setUserDetail] = useState({});
   const [posts, setPosts] = useState([]);
+  const [forum, setForum] = useState(new Forum())
   const [isLoading, setIsLoading] = useState(true)
-  const [key, setKey] = useState('1')
-  const [refresh, setRefresh] = useState(false)
+  const [src, setSrc] = useState({ source: '' })
+  const [isPostsLoading, SetIsPostsLoading] = useState(true)
+  const [isForumLoading, SetIsForumLoading] = useState(true)
+
+
+
   const router = useRouter()
   useEffect(() => {
-    console.log("execute")
-    const retrieveData = async () => {
+    const retrievePosts = async () => {
       const { forum_id } = router.query
-      if (forum_id != undefined && isLoading) {
+      if (forum_id != undefined && isPostsLoading) {
         HttpService.get(`/forums/${forum_id}/posts`).then((val) => {
           const response = new Response(val)
           setPosts(response.data)
-          setIsLoading(false);
-          setRefresh(true)
-          console.log("finish")
+          SetIsPostsLoading(false)
         }).catch((e) => {
           console.log(e)
         })
       }
     }
-    retrieveData()
-  }, [router, isLoading])
+
+    const retrieveForum = async () => {
+      const { forum_id } = router.query
+      if (forum_id != undefined && isForumLoading) {
+        HttpService.get(`/forums/${forum_id}`).then((val) => {
+          const response = new Response(val)
+          setForum(response.data)
+          SetIsForumLoading(false)
+        }).catch((e) => {
+          console.log(e)
+        })
+      }
+    }
+
+    const retrieveCover = async () => {
+      const { forum_id } = router.query
+      if (forum_id != undefined && isLoading) {
+        HttpService.get(`/forums/${forum_id}/cover`, { responseType: 'arraybuffer' }).then(response => {
+          const base64 = btoa(new Uint8Array(response.data).reduce(
+            (data, byte) => data + String.fromCharCode(byte),
+            '',
+          ),
+          );
+          setSrc({ source: 'data:;base64,' + base64 });
+          setIsLoading(false);
+        }).catch((e) => {
+          console.log(e)
+        })
+      }
+    }
+
+    // const retrieveData = async () => {
+    //   const { forum_id } = router.query
+    //   if (forum_id != undefined && isLoading) {
+    //     // 首先获取全部的post
+    //     HttpService.get(`/forums/${forum_id}/posts`).then((val) => {
+    //       const response = new Response(val)
+    //       setPosts(response.data)
+    //       HttpService.get(`/forums/${forum_id}`).then((val) => {
+    //         const response = new Response(val)
+    //         setForum(response.data)
+    //         HttpService.get(getAvatarURL(ud.user_id), { responseType: 'arraybuffer' }).then(response => {
+    //           const base64 = btoa(new Uint8Array(response.data).reduce(
+    //             (data, byte) => data + String.fromCharCode(byte),
+    //             '',
+    //           ),
+    //           );
+    //           setSrc({ source: 'data:;base64,' + base64 });
+    //           setIsLoading(false);
+    //         })
+    //         setIsLoading(false);
+    //         setRefresh(true)
+    //       })
+
+    //     }).catch((e) => {
+    //       console.log(e)
+    //     })
+    //   }
+    // }
+    retrievePosts()
+    // retrieveForum()
+    retrieveCover()
+  }, [router, isLoading, isForumLoading, isPostsLoading])
 
   const onCollapse = () => {
     setCollapsed(!collapsed)
@@ -58,7 +121,7 @@ export default function singleForum (props) {
     }
   }
 
-  if (isLoading) {
+  if (isLoading || isPostsLoading) {
     return (
       <p>is loading</p>
     )
@@ -72,10 +135,10 @@ export default function singleForum (props) {
         </div>
         <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" onClick={(item) => { setKey(item.key) }}>
           <div style={userInfoStyle}>
-            <Avatar className={styles.avatar} size={avatarSize} src={getAvatarURL(userDetail.user_id)} />
-            {!collapsed && <div className={styles.username}>{userDetail.username}</div>}
-            {!collapsed && <div className={styles.email}>{userDetail.email}</div>}
-            {!collapsed && <div className={styles.create_at}>{userDetail.create_at}</div>}
+            <Avatar className={styles.avatar} size={avatarSize} src={src.source} />
+            {!collapsed && <div className={styles.username}>{forum.forum_name}</div>}
+            {!collapsed && <div className={styles.email}>{forum.description}</div>}
+            {!collapsed && <div className={styles.create_at}>{forum.create_at}</div>}
           </div>
           <Menu.Item key="1" icon={<PieChartOutlined />}>
             广场

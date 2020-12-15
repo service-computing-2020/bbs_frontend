@@ -14,7 +14,7 @@ export default class Response {
       this.msg = response.msg
       this.code = response.code
     }
-    if (this.data.token != undefined && this.data.token != "") {
+    if (this.data != undefined && this.data.token != undefined && this.data.token != "") {
       localStorage.setItem('token', this.data.token);
     }
 

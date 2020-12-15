@@ -43,6 +43,10 @@ export default function login () {
     }
   }, [username, status])
 
+  const navigateToRegister = () => {
+    router.push('/users/register')
+  }
+
   const onFinish = async (values) => {
     console.log('Success:', values);
     const body = {
@@ -117,9 +121,11 @@ export default function login () {
 
         <Form.Item {...tailLayout}>
           <Button type="primary" htmlType="submit">
-            Submit
+            登录
         </Button>
+          <Button type="link" onClick={navigateToRegister}> 还没有账号？点击注册</Button>
         </Form.Item>
+
       </Form>
       {isShow && <Alert message={message} type={status} showIcon />}
     </div>

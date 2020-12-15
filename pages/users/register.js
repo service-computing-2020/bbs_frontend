@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import styles from '../../styles/Login.module.css'
 import 'antd/dist/antd.css';
 import { useHistory } from "react-router-dom";
-import { Form, Input, Button, Select, Checkbox } from 'antd';
+import { Form, Input, Button, Select, Checkbox, Alert } from 'antd';
 import { useRouter } from 'next/router';
 import HttpService from '../../services/http'
+import Response from '../../services/response'
 
 const layout = {
   labelCol: {
@@ -27,18 +28,29 @@ const tailLayout = {
 export default function login () {
 
   const router = useRouter();
+  const [showMessage, setShowMessage] = useState(false)
+  const [status, setStatus] = useState("")
+  const [message, setMessage] = useState("")
   const onFinish = async (values) => {
-
     console.log('Success:', values);
     const body = {
-      input: values.input,
-      password: values.password
+      username: values.username,
+      password: values.password,
+      email: values.email
     }
-    const ret = await HttpService.put('users', body)
-    console.log(ret);
-    router.push('/login')
-  };
-
+    const ret = await HttpService.post('users', body)
+    const res = new Response(ret)
+    if (res.isOK()) {
+      setStatus("success")
+      setMessage("注册成功，即将跳转到登录页面")
+      setShowMessage(true)
+      router.push('/users/login')
+    } else {
+      setMessage(`注册失败，${res.msg}`)
+      setShowMessage(true)
+      setStatus("error")
+    }
+  }
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo);
   };
@@ -103,6 +115,7 @@ export default function login () {
         </Button>
         </Form.Item>
       </Form>
+      {showMessage && <Alert message={message} type={status} showIcon />}
     </div>
   );
 }

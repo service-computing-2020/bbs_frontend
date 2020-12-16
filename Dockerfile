@@ -1,13 +1,12 @@
-FROM node:13.12.0-alpine
+FROM node:14
 
 WORKDIR /app
 
 ENV PATH /app/node_modules/.bin:$PATH
 
-COPY package.json ./
-COPY package-lock.json ./
-
-RUN npm install
-
 COPY . ./
-CMD ["npm", "run", "dev"]
+
+RUN yarn install && npm run build
+EXPOSE 3000
+
+CMD ["npm", "run", "start"]

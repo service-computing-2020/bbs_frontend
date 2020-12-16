@@ -70,7 +70,6 @@ export default function PostCard (props) {
               '',
             ),
             );
-            console.log(base64)
             SetSrcs(srcs => [...srcs, { source: 'data:;base64,' + base64 }]);
             setFinished(finished + 1)
             if (i == post.files.length - 1) {

@@ -20,6 +20,7 @@ import { useRouter } from 'next/router';
 import Posts from '../../components/posts'
 import Forum from '../../models/forum';
 import Holes from '../../components/holes';
+import { useForm } from 'antd/lib/form/Form';
 
 function getBase64 (file) {
   return new Promise((resolve, reject) => {
@@ -52,6 +53,12 @@ export default function singleForum (props) {
   const [fileList, setFileList] = useState(
     [])
 
+  const [title, setTitle] = useState("")
+  const [content, setContent] = useState("")
+  const form = Form.useForm()
+
+
+
   const handleCancel = () => { setPreviewVisible(false); }
 
   const handlePreview = async file => {
@@ -70,8 +77,19 @@ export default function singleForum (props) {
   };
 
   const onClose = () => {
+    console.log(form)
+
     setVisible(false)
   };
+
+  const onFinish = async (value) => {
+    console.log(value)
+    console.log(fileList)
+  }
+
+  const createPost = async () => {
+    console.log(form)
+  }
 
   const uploadButton = (
     <div>
@@ -232,75 +250,60 @@ export default function singleForum (props) {
         onClose={onClose}
         visible={visible}
         width={400}
-        footer={
-          <div
-            style={{
-              textAlign: 'right',
-            }}
-          >
-            <Button onClick={onClose} style={{ marginRight: 8 }}>
-              Cancel
-            </Button>
-            <Button onClick={onClose} type="primary">
+      >
+        <Form layout="vertical" hideRequiredMark name="form" onFinish={(value) => onFinish(value)}>
+          <Row gutter={16}>
+            <Form.Item
+              name="title"
+              label="title"
+              rules={[{ required: true, message: '请输入帖子的标题' }]}
+
+            >
+              <Input placeholder="输入帖子的标题" />
+            </Form.Item>
+          </Row>
+          <Row gutter={16}>
+            <Form.Item
+              name="content"
+              label="content"
+              rules={[
+                {
+                  required: true,
+                  message: '请输入帖子的内容',
+                },
+              ]}
+            >
+              <Input.TextArea rows={4} placeholder="输入帖子的内容" />
+            </Form.Item>
+          </Row>
+          {
+            (mode == '公开帖子')
+            &&
+            <div>
+              <Upload
+                listType="picture-card"
+                fileList={fileList}
+                onPreview={handlePreview}
+                onChange={handleChange}
+              >
+                {fileList.length >= 8 ? null : uploadButton}
+              </Upload>
+              <Modal
+                visible={previewVisible}
+                title={previewTitle}
+                footer={null}
+                onCancel={handleCancel}
+              >
+                <img alt="example" style={{ width: '100%' }} src={previewImage} />
+              </Modal>
+            </div>
+          }
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
               Submit
             </Button>
-          </div>
-        }
-      >
-        <Form layout="vertical" hideRequiredMark>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="标题"
-                label="title"
-                rules={[{ required: true, message: '请输入帖子的标题' }]}
-              >
-                <Input placeholder="输入帖子的标题" />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={24}>
-              <Form.Item
-                name="内容"
-                label="content"
-                rules={[
-                  {
-                    required: true,
-                    message: '请输入帖子的内容',
-                  },
-                ]}
-              >
-                <Input.TextArea rows={4} placeholder="输入帖子的内容" />
-              </Form.Item>
-            </Col>
-          </Row>
+          </Form.Item>
         </Form>
-        {
-          (mode == '公开帖子')
-          &&
-          <div>
-            <Upload
-              action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-              listType="picture-card"
-              fileList={fileList}
-              onPreview={handlePreview}
-              onChange={handleChange}
-            >
-              {fileList.length >= 8 ? null : uploadButton}
-            </Upload>
-            <Modal
-              visible={previewVisible}
-              title={previewTitle}
-              footer={null}
-              onCancel={handleCancel}
-            >
-              <img alt="example" style={{ width: '100%' }} src={previewImage} />
-            </Modal>
-          </div>
-        }
-
-
       </Drawer>
     </>
   );

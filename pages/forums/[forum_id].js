@@ -152,24 +152,6 @@ export default function singleForum (props) {
     right: '50px',
     bottom: "50px"
   }
-  // const coverProps = {
-  //   name: 'cover',
-  //   action: `http://localhost:5000/api/forums/${forum.forum_id}/cover`,
-  //   headers: {
-  //     authorization: `Bearer ${localStorage.getItem("token")}`,
-  //   },
-  //   onChange (info) {
-  //     if (info.file.status !== 'uploading') {
-  //       console.log(info.file, info.fileList);
-  //     }
-  //     if (info.file.status === 'done') {
-  //       message.success(`${info.file.name} 封面上传成功`);
-  //     } else if (info.file.status === 'error') {
-  //       message.error(`${info.file.name} 封面上传失败.`);
-  //     }
-  //   },
-  // };
-
   const router = useRouter()
   useEffect(() => {
     const retrieveHoles = async () => {

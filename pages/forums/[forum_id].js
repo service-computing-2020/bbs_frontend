@@ -152,6 +152,7 @@ export default function singleForum (props) {
     right: '50px',
     bottom: "50px"
   }
+
   const router = useRouter()
   useEffect(() => {
     const retrieveHoles = async () => {

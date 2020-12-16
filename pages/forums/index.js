@@ -71,6 +71,7 @@ export default function forums () {
         console.log(response)
         const ud = response.data.user_detail
         const fs = response.data.forums
+
         setUserDetail(new User(ud))
         let stars = []
         let participate = []

@@ -7,7 +7,7 @@ export default class Post {
   create_at;
   like;
   files;
-
+  username;
   constructor(data) {
     Object.assign(this, data)
     if (this.files == null) {

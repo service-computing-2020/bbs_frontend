@@ -7,6 +7,13 @@ import Hole from '../models/hole';
 
 const { Meta } = Card
 
+const subscribeStyle = {
+  'position': 'absolute',
+  'font-size': '5px',
+  'color': 'gray',
+  'top': '10px',
+  'right': '10px'
+}
 
 export default function HoleCard (props) {
 
@@ -20,6 +27,9 @@ export default function HoleCard (props) {
         title={hole.title}
         description={hole.content}
       />
+      <div style={subscribeStyle}>
+        {hole.create_at.slice(0, 10)} <br />
+      </div>
     </Card>
   )
 }

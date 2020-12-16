@@ -15,10 +15,10 @@ export default function CommentList (props) {
       renderItem={item => (
         <li>
           <Comment
-            author={item.author}
-            avatar={item.avatar}
+            author={item.username}
+            avatar={"https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"}
             content={item.content}
-            datetime={item.datetime}
+            datetime={item.create_at}
           />
         </li>
       )}

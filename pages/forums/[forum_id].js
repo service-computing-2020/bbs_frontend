@@ -5,8 +5,11 @@ import {
   PieChartOutlined,
   UserOutlined,
   SearchOutlined,
+  UploadOutlined,
   PlusOutlined
 } from '@ant-design/icons';
+import { message, Space } from 'antd';
+
 import 'antd/dist/antd.css';
 
 import Response from '../../services/response';
@@ -21,6 +24,7 @@ import Posts from '../../components/posts'
 import Forum from '../../models/forum';
 import Holes from '../../components/holes';
 import { useForm } from 'antd/lib/form/Form';
+import Axios from 'axios';
 
 function getBase64 (file) {
   return new Promise((resolve, reject) => {
@@ -52,10 +56,21 @@ export default function singleForum (props) {
   const [previewTitle, setPreviewTitle] = useState('')
   const [fileList, setFileList] = useState(
     [])
-
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
-  const form = Form.useForm()
+
+  const dataURLtoFile = (dataurl, filename) => {
+    const arr = dataurl.split(',')
+    const mime = arr[0].match(/:(.*?);/)[1]
+    const bstr = atob(arr[1])
+    let n = bstr.length
+    const u8arr = new Uint8Array(n)
+    while (n) {
+      u8arr[n - 1] = bstr.charCodeAt(n - 1)
+      n -= 1 // to make eslint happy
+    }
+    return new File([u8arr], filename, { type: mime })
+  }
 
 
 
@@ -77,19 +92,53 @@ export default function singleForum (props) {
   };
 
   const onClose = () => {
-    console.log(form)
 
     setVisible(false)
   };
 
+
   const onFinish = async (value) => {
     console.log(value)
     console.log(fileList)
+
+    if (mode == '公开帖子') {
+      let form = new FormData();
+      form.append("title", value.title)
+      form.append("content", value.content)
+
+      for (let i = 0; i < fileList.length; i++) {
+        const file = dataURLtoFile(fileList[i].thumbUrl, fileList[i].name)
+        console.log(file)
+        form.append("files[]", file, file.name)
+      }
+      const response = await Axios({
+        method: 'post',
+        url: `http://localhost:5000/api/forums/${forum.forum_id}/posts`,
+        data: form,
+        headers: {
+          'Content-Type': `multipart/form-data; boundary=${form._boundary}`,
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
+      if (response != undefined) {
+        message.success("发布公开帖子成功")
+      } else {
+        message.error("发布公开帖子失败")
+      }
+
+    } else {
+      // 发布树洞
+      let form = new FormData();
+      form.append("title", value.title)
+      form.append("content", value.content)
+      let response = await HttpService.post(`/forums/${forum.forum_id}/holes`, form).catch((e) => { message.error('发布树洞失败') })
+      if (response != undefined) {
+        message.success('发布树洞成功')
+      }
+    }
   }
 
-  const createPost = async () => {
-    console.log(form)
-  }
+
 
   const uploadButton = (
     <div>
@@ -99,10 +148,27 @@ export default function singleForum (props) {
   );
 
   let buttonStyle = {
-    position: 'absolute',
-    right: "10%",
-    bottom: "10%"
+    position: 'fixed',
+    right: '50px',
+    bottom: "50px"
   }
+  // const coverProps = {
+  //   name: 'cover',
+  //   action: `http://localhost:5000/api/forums/${forum.forum_id}/cover`,
+  //   headers: {
+  //     authorization: `Bearer ${localStorage.getItem("token")}`,
+  //   },
+  //   onChange (info) {
+  //     if (info.file.status !== 'uploading') {
+  //       console.log(info.file, info.fileList);
+  //     }
+  //     if (info.file.status === 'done') {
+  //       message.success(`${info.file.name} 封面上传成功`);
+  //     } else if (info.file.status === 'error') {
+  //       message.error(`${info.file.name} 封面上传失败.`);
+  //     }
+  //   },
+  // };
 
   const router = useRouter()
   useEffect(() => {
@@ -222,6 +288,29 @@ export default function singleForum (props) {
               {!collapsed && <div className={styles.email}>{forum.description}</div>}
               {!collapsed && <div className={styles.create_at}>{forum.create_at}</div>}
             </div>
+            <Upload
+              name='cover'
+              action={`http://localhost:5000/api/forums/${forum.forum_id}/cover`}
+              headers={
+                {
+                  authorization: `Bearer ${localStorage.getItem("token")}`,
+                }
+              }
+              onChange={
+                (info) => {
+                  if (info.file.status !== 'uploading') {
+                    console.log(info.file, info.fileList);
+                  }
+                  if (info.file.status === 'done') {
+                    message.success(`${info.file.name} 封面上传成功`);
+                  } else if (info.file.status === 'error') {
+                    message.error(`${info.file.name} 封面上传失败.`);
+                  }
+                }
+              }
+            >
+              {!collapsed && <Button icon={<UploadOutlined />}>上传论坛封面</Button>}
+            </Upload>
             <Menu.Item key="1" icon={<PieChartOutlined />}>
               广场
             </Menu.Item>

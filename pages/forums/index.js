@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import HttpService from '../../services/http'
 import styles from '../../styles/Forum.module.css'
 import 'antd/dist/antd.css';
-import { Layout, Menu, Breadcrumb, message, Avatar, Button, Upload } from 'antd';
+import { Layout, Menu, Breadcrumb, message, Avatar, Button, Upload, Tooltip, Drawer, Form, Row, Col, Input, Checkbox } from 'antd';
 import Forums from '../../components/forums'
 import {
   PieChartOutlined,
   UserOutlined,
-  UploadOutlined
+  UploadOutlined,
+  PlusOutlined
 } from '@ant-design/icons';
 import Response from '../../services/response';
 import User from '../../models/user';
@@ -29,6 +30,37 @@ export default function forums () {
   const [allForumsShow, setAllForumsShow] = useState(true)
   const [starForumsShow, setStarForumsShow] = useState(false)
   const [participateForumsShow, setParticipateForumsShow] = useState(false)
+  const [visible, setVisible] = useState(false)
+
+  let buttonStyle = {
+    position: 'fixed',
+    right: '50px',
+    bottom: "50px"
+  }
+  const onClose = () => {
+
+    setVisible(false)
+  };
+  const onFinish = async (value) => {
+    let body = {
+      forum_name: value.title,
+      is_public: value.is_public,
+      description: value.description
+    }
+    console.log(body)
+
+    let response = await HttpService.post(`/forums`, body).catch((e) => { console.log(e) })
+    if (response != undefined) {
+      message.success("创建论坛成功")
+    } else {
+      message.error("创建论坛失败")
+    }
+  }
+
+  const showDrawer = () => {
+    setVisible(true)
+  };
+
 
   useEffect(() => {
     const retrieveData = async () => {
@@ -94,6 +126,8 @@ export default function forums () {
     )
   }
 
+
+
   const props = {
     name: 'avatar',
     action: `http://localhost:5000/api/users/${userDetail.user_id}/avatar`,
@@ -125,39 +159,89 @@ export default function forums () {
     }
   }
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sider collapsible collapsed={collapsed} onCollapse={onCollapse}>
-        <div className={styles.logo}>
-
-        </div>
-        <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" onClick={(item) => { switchForums(item.key) }}>
-          <div style={userInfoStyle}>
-            <Avatar className={styles.avatar} size={avatarSize} src={src.source} />
-            {!collapsed && <div className={styles.username}>{userDetail.username}</div>}
-            {!collapsed && <div className={styles.email}>{userDetail.email}</div>}
-            {!collapsed && <div className={styles.create_at}>{userDetail.create_at}</div>}
+    <>
+      <Layout style={{ minHeight: '100vh' }}>
+        <Sider collapsible collapsed={collapsed} onCollapse={onCollapse}>
+          <div className={styles.logo}>
 
           </div>
-          <Upload {...props}>
-            {!collapsed && <Button icon={<UploadOutlined />}>上传头像</Button>}
-          </Upload>
-          <Menu.Item key="1" icon={<PieChartOutlined />}>
-            浏览
+          <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" onClick={(item) => { switchForums(item.key) }}>
+            <div style={userInfoStyle}>
+              <Avatar className={styles.avatar} size={avatarSize} src={src.source} />
+              {!collapsed && <div className={styles.username}>{userDetail.username}</div>}
+              {!collapsed && <div className={styles.email}>{userDetail.email}</div>}
+              {!collapsed && <div className={styles.create_at}>{userDetail.create_at}</div>}
+
+            </div>
+            <Upload {...props}>
+              {!collapsed && <Button icon={<UploadOutlined />}>上传头像</Button>}
+            </Upload>
+            <Menu.Item key="1" icon={<PieChartOutlined />}>
+              浏览
             </Menu.Item>
-          <SubMenu key="sub1" icon={<UserOutlined />} title="我的订阅">
-            <Menu.Item key="2">公共</Menu.Item>
-            <Menu.Item key="3">私有</Menu.Item>
-          </SubMenu>
-        </Menu>
-      </Sider>
-      <Layout className="site-layout">
-        <Header className="site-layout-background" style={{ padding: 0 }} />
-        <Content style={{ margin: '0 16px' }}>
-          {allForumsShow && <Forums forums={forums} />}
-          {starForumsShow && <Forums forums={starForums} />}
-          {participateForumsShow && <Forums forums={participateForums} />}
-        </Content>
+            <SubMenu key="sub1" icon={<UserOutlined />} title="我的订阅">
+              <Menu.Item key="2">公共</Menu.Item>
+              <Menu.Item key="3">私有</Menu.Item>
+            </SubMenu>
+          </Menu>
+        </Sider>
+        <Layout className="site-layout">
+          <Header className="site-layout-background" style={{ padding: 0 }} />
+          <Content style={{ margin: '0 16px' }}>
+            {allForumsShow && <Forums forums={forums} />}
+            {starForumsShow && <Forums forums={starForums} />}
+            {participateForumsShow && <Forums forums={participateForums} />}
+            <div style={buttonStyle}>
+              <Tooltip title={`创建论坛`}>
+                <Button type="primary" shape="circle" size={'large'} onClick={showDrawer} icon={<PlusOutlined />} />
+              </Tooltip>
+            </div>
+          </Content>
+        </Layout>
       </Layout>
-    </Layout>
+      <Drawer
+        title={`创建论坛`}
+        placement="right"
+        closable={false}
+        onClose={onClose}
+        visible={visible}
+        width={400}
+      >
+        <Form layout="vertical" hideRequiredMark name="form" onFinish={(value) => onFinish(value)}>
+          <Row gutter={16}>
+            <Form.Item
+              name="title"
+              label="title"
+              rules={[{ required: true, message: '请输入论坛的标题' }]}
+            >
+              <Input placeholder="输入论坛的标题" />
+            </Form.Item>
+          </Row>
+          <Form.Item name="is_public" valuePropName="checked">
+            <Checkbox>是否公开</Checkbox>
+          </Form.Item>
+          <Row gutter={16}>
+            <Form.Item
+              name="content"
+              label="content"
+              rules={[
+                {
+                  required: true,
+                  message: '请输入论坛的简介',
+                },
+              ]}
+            >
+              <Input.TextArea rows={4} placeholder="输入论坛的简介" />
+            </Form.Item>
+          </Row>
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              创建
+            </Button>
+          </Form.Item>
+        </Form>
+      </Drawer>
+    </>
   );
 }

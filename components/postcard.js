@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import 'antd/dist/antd.css';
 import { Card, Avatar, Image, Drawer, Button, Form, message } from 'antd';
-import { EditOutlined, EllipsisOutlined, SettingOutlined, LikeOutlined } from '@ant-design/icons';
+import { EditOutlined, EllipsisOutlined, SettingOutlined, LikeOutlined, LikeTwoTone } from '@ant-design/icons';
 import CommentList from '../components/commentList'
 import Post from '../models/post'
 import User from '../models/user'
@@ -64,6 +64,8 @@ export default function PostCard (props) {
   const [input, setInput] = useState('')
   const [avatarSrc, setAvatarSrc] = useState({ source: '' })
   const [comments, setComments] = useState([])
+  const [isLike, setIsLike] = useState(post.is_like)
+  const [isLoadingLike, setIsLoadingLike] = useState(true)
 
   const onFinish = async (val) => {
     console.log(val)
@@ -79,6 +81,7 @@ export default function PostCard (props) {
     }
   }
   useEffect(() => {
+
     const retrieveCover = async () => {
       const forum_id = post.forum_id
       if (post.files.length == 0) {
@@ -178,7 +181,7 @@ export default function PostCard (props) {
             style={cardStyle}
             actions={[
               <EditOutlined key="评论" onClick={showComment} />,
-              <LikeOutlined key="点赞" onClick={like} />,
+              isLike ? <LikeTwoTone key="点赞" onClick={like} /> : <LikeOutlined key="点赞" onClick={like} />,
             ]}
           >
             <Meta

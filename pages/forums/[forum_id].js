@@ -9,7 +9,7 @@ import {
   PlusOutlined
 } from '@ant-design/icons';
 import { message, Space } from 'antd';
-
+import AsyncMention from '../../components/mention'
 import 'antd/dist/antd.css';
 
 import Response from '../../services/response';
@@ -35,11 +35,27 @@ function getBase64 (file) {
   });
 }
 
+const addMemberStyle = {
+  position: "absolute",
+  left: "20%",
+  top: "-20%"
+}
+
+const bar = {
+  position: 'relative',
+  top: '5%',
+  width: '60%',
+  left: "20%",
+  color: 'white',
+  display: 'flex'
+}
+
 export default function singleForum (props) {
   const [collapsed, setCollapsed] = useState(false)
   const [avatarSize, setAvatarSize] = useState(64)
   const [userInfoStyle, setUserInfoStyle] = useState({ height: '200px', position: 'relative' })
   const [posts, setPosts] = useState([]);
+  const [userDetail, setUserDetail] = useState(new User())
   const [forum, setForum] = useState(new Forum())
   const [isLoading, setIsLoading] = useState(true)
   const [src, setSrc] = useState({ source: '' })
@@ -56,8 +72,7 @@ export default function singleForum (props) {
   const [previewTitle, setPreviewTitle] = useState('')
   const [fileList, setFileList] = useState(
     [])
-  const [title, setTitle] = useState("")
-  const [content, setContent] = useState("")
+
 
   const dataURLtoFile = (dataurl, filename) => {
     const arr = dataurl.split(',')
@@ -179,10 +194,20 @@ export default function singleForum (props) {
       if (forum_id != undefined && isPostsLoading) {
         HttpService.get(`/forums/${forum_id}/posts`).then((val) => {
           const response = new Response(val)
-          if (response.data == null) {
+          if (response.data.posts == null) {
             setPosts([])
+            setUserDetail(response.data.user)
           } else {
-            setPosts(response.data)
+            let posts = response.data.posts
+            let user = response.data.user
+            let likeList = user.like_list
+            posts.map((val, i) => {
+              if (likeList.includes(val.post_id)) {
+                val.is_like = true
+              }
+            })
+            setPosts(posts)
+            setUserDetail(user)
           }
           SetIsPostsLoading(false)
         }).catch((e) => {
@@ -261,8 +286,8 @@ export default function singleForum (props) {
     <>
       <Layout style={{ minHeight: '100vh' }}>
         <Sider collapsible collapsed={collapsed} onCollapse={onCollapse}>
-          <div className={styles.logo}>
-
+          <div>
+            <Avatar src="https://www.google.com/url?sa=i&url=https%3A%2F%2Fworldvectorlogo.com%2Flogo%2Fbbs&psig=AOvVaw2SkQRzosaZuLgjksjAtEiV&ust=1608284570041000&source=images&cd=vfe&ved=0CAIQjRxqFwoTCKDyz4Xd1O0CFQAAAAAdAAAAABAD" />
           </div>
           <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" onClick={(item) => { switchBrowser(item.key) }}>
             <div style={userInfoStyle}>
@@ -303,7 +328,14 @@ export default function singleForum (props) {
           </Menu>
         </Sider>
         <Layout className="site-layout">
-          <Header className="site-layout-background" style={{ padding: 0 }} />
+          <Header className="site-layout-background" style={{ padding: 0 }}>
+            <div style={bar}>
+              <div>输入您想添加的成员</div>
+              <div style={addMemberStyle}>
+                <AsyncMention />
+              </div>
+            </div>
+          </Header>
           <Content style={{ margin: '0 16px' }}>
             {isPostShow && <Posts posts={posts} />}
             {isHoleShow && <Holes holes={holes} />}

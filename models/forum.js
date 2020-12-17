@@ -7,6 +7,8 @@ export default class Forum {
   is_public;
   is_star;
   post_num;
+  admin_list;
+
   constructor(data) {
     Object.assign(this, data)
   }

@@ -8,6 +8,7 @@ export default class Post {
   like;
   files;
   username;
+  is_like
   constructor(data) {
     Object.assign(this, data)
     if (this.files == null) {

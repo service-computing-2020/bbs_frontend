@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import HttpService from '../../services/http'
 import styles from '../../styles/Forum.module.css'
 import 'antd/dist/antd.css';
-import { Layout, Menu, Breadcrumb, message, Avatar, Button, Upload, Tooltip, Drawer, Form, Row, Col, Input, Checkbox } from 'antd';
+import { Layout, Menu, Breadcrumb, message, Avatar, Button, Upload, Tooltip, Drawer, Form, Row, Col, Input, Checkbox, Spin } from 'antd';
 import Forums from '../../components/forums'
 import {
   PieChartOutlined,
@@ -123,7 +123,7 @@ export default function forums () {
 
   if (isLoading) {
     return (
-      <p>is loading</p>
+      <Spin size={"large"} />
     )
   }
 

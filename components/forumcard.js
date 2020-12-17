@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import 'antd/dist/antd.css';
 import { Skeleton, Switch, Card, Avatar, message } from 'antd';
-import { SelectOutlined, StarOutlined } from '@ant-design/icons';
+import { SelectOutlined, StarOutlined, StarTwoTone } from '@ant-design/icons';
 import Forum from '../models/forum'
 import HttpService from '../services/http';
 import Response from '../services/response';
@@ -18,6 +18,7 @@ export default function ForumCard (props) {
   const [starNum, setStarNum] = useState(forum.subscribe_num)
   const [src, setSrc] = useState({ source: '' })
   const [isLoading, setIsLoading] = useState(true)
+  const [isStarLoading, setIsStarLoading] = useState(true)
   const router = useRouter()
 
   const subscribeStyle = {
@@ -45,7 +46,7 @@ export default function ForumCard (props) {
       }
     }
     retrieveCover()
-  }, [isLoading])
+  }, [isLoading, isStarLoading])
   const navigateToPost = () => {
     router.push(`/forums/${forum.forum_id}`)
   }
@@ -71,7 +72,7 @@ export default function ForumCard (props) {
         style={{ width: 300, marginTop: 16 }}
         actions={[
           <SelectOutlined key="进入" onClick={navigateToPost} />,
-          <StarOutlined key="订阅" onClick={subscribeOnForum} />,
+          isStar ? <StarTwoTone key="订阅" onClick={subscribeOnForum} /> : <StarOutlined key="订阅" onClick={subscribeOnForum} />
         ]}
       >
         <Skeleton loading={loading} avatar active>

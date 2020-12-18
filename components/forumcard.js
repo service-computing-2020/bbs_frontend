@@ -42,6 +42,7 @@ export default function ForumCard (props) {
           setIsLoading(false);
         }).catch((e) => {
           console.log(e)
+          setIsLoading(false)
         })
       }
     }

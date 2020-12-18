@@ -38,7 +38,6 @@ function getBase64 (file) {
 const addMemberStyle = {
   position: "absolute",
   left: "20%",
-  top: "-20%"
 }
 
 const bar = {
@@ -244,6 +243,7 @@ export default function singleForum (props) {
           setIsLoading(false);
         }).catch((e) => {
           console.log(e)
+          setIsLoading(false)
         })
       }
     }
@@ -287,7 +287,6 @@ export default function singleForum (props) {
       <Layout style={{ minHeight: '100vh' }}>
         <Sider collapsible collapsed={collapsed} onCollapse={onCollapse}>
           <div>
-            <Avatar src="https://www.google.com/url?sa=i&url=https%3A%2F%2Fworldvectorlogo.com%2Flogo%2Fbbs&psig=AOvVaw2SkQRzosaZuLgjksjAtEiV&ust=1608284570041000&source=images&cd=vfe&ved=0CAIQjRxqFwoTCKDyz4Xd1O0CFQAAAAAdAAAAABAD" />
           </div>
           <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" onClick={(item) => { switchBrowser(item.key) }}>
             <div style={userInfoStyle}>
@@ -332,7 +331,7 @@ export default function singleForum (props) {
             <div style={bar}>
               <div>输入您想添加的成员</div>
               <div style={addMemberStyle}>
-                <AsyncMention />
+                <AsyncMention data={forum} />
               </div>
             </div>
           </Header>

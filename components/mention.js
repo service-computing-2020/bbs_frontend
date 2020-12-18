@@ -1,11 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import 'antd/dist/antd.css';
-import { Mentions } from 'antd';
+import { Mentions, Button, message } from 'antd';
 import debounce from 'lodash/debounce';
+import HttpService from '../services/http';
 
 const { Option } = Mentions;
+const mentionStyle = {
+  display: 'flex',
+  alignItems: 'center'
 
+}
 export default class AsyncMention extends React.Component {
   constructor() {
     super();
@@ -25,6 +30,25 @@ export default class AsyncMention extends React.Component {
     this.loadGithubUsers(search);
   };
 
+  addUsers = async () => {
+    console.log(11111)
+    const { users } = this.state
+    let body = {
+      users: []
+    }
+    users.map((val, i) => {
+      body.users.push(val.user_id)
+    })
+    const {
+      forum_id
+    } = this.props.data
+    await HttpService.put(`/forums/${forum_id}/role`, body).then((res) => {
+      message.success("添加论坛成员成功")
+    }).catch((e) => {
+      message.error("添加论坛成员失败")
+    })
+  }
+
   loadGithubUsers (key) {
     if (!key) {
       this.setState({
@@ -33,31 +57,32 @@ export default class AsyncMention extends React.Component {
       return;
     }
 
-    fetch(`https://api.github.com/search/users?q=${key}`)
-      .then(res => res.json())
-      .then(({ items = [] }) => {
-        const { search } = this.state;
-        if (search !== key) return;
-
-        this.setState({
-          users: items.slice(0, 10),
-          loading: false,
-        });
-      });
+    HttpService.get(`/users?username=${key}`).then((res) => {
+      const { search } = this.state;
+      if (search !== key) return;
+      this.setState({
+        users: res.data.data,
+        loading: false
+      })
+    })
   }
 
   render () {
     const { users, loading } = this.state;
 
     return (
-      <Mentions style={{ width: '100%' }} loading={loading} onSearch={this.onSearch} placeholder="e.g. @bob @henry">
-        {users.map(({ login, avatar_url: avatar }) => (
-          <Option key={login} value={login} className="antd-demo-dynamic-option">
-            <img src={avatar} alt={login} />
-            <span>{login}</span>
-          </Option>
-        ))}
-      </Mentions>
+      <div style={mentionStyle}>
+        <Mentions style={{ width: '100%' }} loading={loading} onSearch={this.onSearch} placeholder="e.g. @bob @henry">
+          {users.map(({ username }) => (
+            <Option key={username} value={username} className="antd-demo-dynamic-option">
+              <span>{username}</span>
+            </Option>
+          ))}
+        </Mentions>
+
+        <Button type='primary' onClick={this.addUsers}>确认添加</Button>
+      </div>
+
     );
   }
 }

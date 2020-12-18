@@ -108,7 +108,7 @@ export default function PostCard (props) {
             if (i == post.files.length - 1) {
               SetIsLoading(false);
             }
-          }).catch((e) => { console.log(e) })
+          }).catch((e) => { console.log(e); SetIsLoading(false) })
         }
 
       }
@@ -127,6 +127,7 @@ export default function PostCard (props) {
           setIsAvatarLoading(false)
         }).catch((e) => {
           message.error("获取头像失败")
+          setIsAvatarLoading(false)
         })
       }
     }

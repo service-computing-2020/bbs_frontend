@@ -8,6 +8,7 @@ export default function Posts (props) {
 
   return (
     posts.map((val, i) => {
+      console.log(val)
       return <div><PostCard post={val} /></div>
     })
   )

@@ -7,3 +7,5 @@ export function getAvatarURL (user_id) {
 export function getCover (forum_id) {
   return `${base_url}/forums/${forum_id}/cover`
 }
+
+export { base_url }

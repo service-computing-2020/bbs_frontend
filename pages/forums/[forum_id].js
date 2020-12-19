@@ -17,7 +17,7 @@ import User from '../../models/user';
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 import styles from '../../styles/Forum.module.css'
-import { getAvatarURL } from '../../services/file';
+import { getAvatarURL, base_url } from '../../services/file';
 import HttpService from '../../services/http';
 import { useRouter } from 'next/router';
 import Posts from '../../components/posts'
@@ -38,15 +38,17 @@ function getBase64 (file) {
 const addMemberStyle = {
   position: "absolute",
   left: "20%",
+  top: "15%"
+
 }
 
 const bar = {
   position: 'relative',
-  top: '5%',
   width: '60%',
   left: "20%",
   color: 'white',
-  display: 'flex'
+  display: 'flex',
+  height: '10%'
 }
 
 export default function singleForum (props) {
@@ -127,7 +129,7 @@ export default function singleForum (props) {
       }
       const response = await Axios({
         method: 'post',
-        url: `http://localhost:5000/api/forums/${forum.forum_id}/posts`,
+        url: `${base_url}/forums/${forum.forum_id}/posts`,
         data: form,
         headers: {
           'Content-Type': `multipart/form-data; boundary=${form._boundary}`,
@@ -191,12 +193,15 @@ export default function singleForum (props) {
     const retrievePosts = async () => {
       const { forum_id } = router.query
       if (forum_id != undefined && isPostsLoading) {
-        HttpService.get(`/forums/${forum_id}/posts`).then((val) => {
+        await HttpService.get(`/forums/${forum_id}/posts`).then((val) => {
           const response = new Response(val)
+          console.log(response)
           if (response.data.posts == null) {
+            console.log("is null")
             setPosts([])
             setUserDetail(response.data.user)
           } else {
+            console.log("not null")
             let posts = response.data.posts
             let user = response.data.user
             let likeList = user.like_list
@@ -297,7 +302,7 @@ export default function singleForum (props) {
             </div>
             <Upload
               name='cover'
-              action={`http://localhost:5000/api/forums/${forum.forum_id}/cover`}
+              action={`${base_url}/forums/${forum.forum_id}/cover`}
               headers={
                 {
                   authorization: `Bearer ${localStorage.getItem("token")}`,

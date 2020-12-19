@@ -6,6 +6,8 @@ ENV PATH /app/node_modules/.bin:$PATH
 
 COPY . ./
 
+RUN rm -rf .next
+
 RUN yarn install && npm run build
 
 FROM node:14-alpine AS production
@@ -16,7 +18,7 @@ COPY --from=build /app/public ./public
 # COPY --from=build /app/services ./services
 # COPY --from=build /app/models ./models
 # COPY --from=build /app/components ./components
-RUN npm config set registry https://registry.npm.taobao.org && npm install
+RUN npm config set registry https://registry.npm.taobao.org && npm install 
 EXPOSE 3000
 
 CMD ["npm", "run", "start"]

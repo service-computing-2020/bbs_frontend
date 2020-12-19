@@ -12,7 +12,7 @@ import {
 } from '@ant-design/icons';
 import Response from '../../services/response';
 import User from '../../models/user';
-import { getAvatarURL } from '../../services/file';
+import { getAvatarURL, base_url } from '../../services/file';
 
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
@@ -131,7 +131,7 @@ export default function forums () {
 
   const props = {
     name: 'avatar',
-    action: `http://localhost:5000/api/users/${userDetail.user_id}/avatar`,
+    action: `${base_url}/users/${userDetail.user_id}/avatar`,
     headers: {
       authorization: `Bearer ${localStorage.getItem("token")}`,
     },

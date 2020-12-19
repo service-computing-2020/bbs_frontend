@@ -97,6 +97,7 @@ export default function PostCard (props) {
       if (forum_id != undefined && isLoading) {
 
         for (let i = 0; i < post.files.length; i++) {
+          console.log("load file")
           await HttpService.get(`/forums/${forum_id}/posts/${post.post_id}/files/${post.files[i].filename}`, { responseType: 'arraybuffer' }).then((response) => {
             const base64 = btoa(new Uint8Array(response.data).reduce(
               (data, byte) => data + String.fromCharCode(byte),
@@ -106,18 +107,19 @@ export default function PostCard (props) {
             SetSrcs(srcs => [...srcs, { source: 'data:;base64,' + base64 }]);
             setFinished(finished + 1)
             if (i == post.files.length - 1) {
-              SetIsLoading(false);
             }
           }).catch((e) => { console.log(e); SetIsLoading(false) })
         }
-
+        // while (finished >= post.files.length - 1) {
+        // }
+        SetIsLoading(false);
       }
     }
 
     const retrieveAvatar = async () => {
       const user_id = post.user_id
       if (user_id != undefined && isAvatarLoading) {
-        HttpService.get(`/users/${user_id}/avatar`, { responseType: 'arraybuffer' }).then((response) => {
+        await HttpService.get(`/users/${user_id}/avatar`, { responseType: 'arraybuffer' }).then((response) => {
           const base64 = btoa(new Uint8Array(response.data).reduce(
             (data, byte) => data + String.fromCharCode(byte),
             '',
